@@ -13,12 +13,12 @@ client= QdrantClient(
 )
 
 
-@retry(
-    stop= stop_after_attempt(3),
-    wait= wait_exponential(multiplier=1, min=1, max=5),
-    reraise= True,
-    before_sleep= before_sleep_log(logfire, "Warning")
-)
+# @retry(
+#     stop= stop_after_attempt(3),
+#     wait= wait_exponential(multiplier=1, min=1, max=5),
+#     reraise= True,
+#     before_sleep= before_sleep_log(logfire, "Warning")
+# )
 def search_enterprise_knowledge(query: str, limit: int=8):
     """ 
     Performs a high -precision search in the enterprise knowledge base.
