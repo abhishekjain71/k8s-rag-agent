@@ -51,7 +51,6 @@ graph TD
 │   │   └── retrieval/   # Gemini embeddings + Qdrant search + FlashRank reranking
 │   ├── config.py        # Centralized environment variable management
 │   └── main.py          # FastAPI entrypoint — guardrails gate + /query endpoint
-├── evals/               # RAGAS evaluation suite + Streamlit 3-tab demo
 ├── ui/                  # Streamlit chat interface with reasoning step transparency
 ├── processed_data/      # Auto-generated — parsed & chunked JSON output per document
 ├── docs/                # Architectural and operational guides (11 docs)
@@ -74,3 +73,68 @@ graph TD
 | Observability | Pydantic Logfire + LangSmith |
 
 ---
+
+## Getting Started
+
+### 1. Install dependencies
+
+**Install `uv` (one-time):**
+```powershell
+# Windows (PowerShell)
+irm https://astral.sh/uv/install.ps1 | iex
+```
+```bash
+# Linux / macOS
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+> Install ke baad naya terminal window kholo aur `uv --version` se confirm kar lo.
+
+**Create venv and install requirements:**
+```powershell
+uv venv tenvv
+.\tenvv\Scripts\activate
+uv pip install -r requirements.txt
+```
+
+### 2. Configure environment
+Create a `.env` file with the following keys:
+```env
+# Groq Reasoning Engine (Llama 3.3)
+GROQ_API_KEY = ""
+GROQ_FALLBACK_API_KEY = ""          # second Groq key, or same as primary
+# Portkey LLM Gateway
+PORTKEY_API_KEY = ""
+# Qdrant Vector DB
+QDRANT_API_KEY = ""
+QDRANT_CLUSTER_ENDPOINT = ""        # e.g. https://your-cluster.cloud.qdrant.io:6333
+# Pydantic Logfire Observability
+LOGFIRE_TOKEN = ""
+# LangSmith
+LANGSMITH_TRACING = true
+LANGSMITH_ENDPOINT = https://api.smith.langchain.com
+LANGSMITH_API_KEY = ""
+LANGSMITH_PROJECT = ""
+# Streamlit UI → FastAPI
+BACKEND_URL = ""                    # e.g. http://localhost:8000
+# Eval judge LLM (keep separate from main key to avoid rate-limiting the live app)
+JUDGE_GROQ = ""
+# Gemini Embeddings
+GEMINI_API_KEY = ""
+```
+
+### 3. Run data ingestion
+Parses all documents in `DATA/`, chunks them, saves metadata to `processed_data/`, and indexes vectors into Qdrant.
+```powershell
+python -m app.ingestion.processor DATA --wipe
+```
+> Pass `--wipe` to drop and recreate the Qdrant collection. Omit it to append to an existing collection.
+
+### 4. Launch the app
+```powershell
+# Terminal 1 — FastAPI backend
+uvicorn app.main:app --reload --port 8000
+
+# Terminal 2 — Streamlit UI
+streamlit run ui/app.py
+```
+
